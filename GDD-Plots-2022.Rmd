@@ -8,22 +8,239 @@ date: '2022-05-11'
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Web Scraping
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+### West Madison
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Using the Middleton Airport data (KC29)
 
-```{r cars}
-summary(cars)
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(curl)
+library(rjson)
+
+curl_download("https://api.weather.gov/stations/KC29/observations", "tmp.json")
+
+data <- fromJSON(file="tmp.json")
+
+times <- data.frame(row=factor(),
+                    time = character(),
+                    temp=double(),
+                    precipitation=double())
+
+for (i in 1:length(data$features)) {
+  if (length((data$features[[i]])$properties$temperature$value) == 0) {
+    next()
+  }
+  tempdf <- data.frame(i, (data$features[[i]])$properties$timestamp, (data$features[[i]])$properties$temperature$value)
+  names(tempdf) <- c("row", "time", "temp")
+  times <- rbind(times, tempdf)
+}
+
+times <- times %>%
+  separate(time, c("Day", "Time"), sep="T") %>%
+  mutate(Time = substr(Time, 1,5)) %>%
+  separate(Day, c("Year", "Month", "Day")) %>%
+  mutate(tempF = temp * (9/5) + 32) %>%
+  mutate(Date = paste(Month, Day, Year, sep="/")) %>%
+  group_by(Date) %>%
+  summarize(MaxTemp = max(tempF),
+            MinTemp = min(tempF))
+  
+
+write.csv(times, "WMARS.csv")
+
 ```
 
-## Including Plots
+### Hancock
 
-You can also embed plots, for example:
+Michigan has changed its website since last year, so I've added `legacy` to the beginnings of the URLs
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+library(rvest)
+
+Date <- Sys.Date()
+
+data <- read_html(paste("https://legacy.enviroweather.msu.edu/run.php?stn=hck&mod=w_sum&da1=28&mo1=4&da2=", (as.numeric(substr(Date, 9, 10))-1), "&mo2=", substr(Date, 6, 7), "&yr=2021&mc=604&ds=cd", sep="")) %>% 
+  html_elements("td") %>%
+  html_text2()
+
+matrix <- t(replace(matrix(NA, 17, ceiling(length(data) / 17)), seq_along(data), data))
+data <- as.data.frame(matrix)
+
+write.table(data, "Hancock.csv", sep=",", col.names=FALSE, row.names=FALSE)
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+### Arlington
+
+```{r}
+library(rvest)
+
+Date <- Sys.Date()
+
+data <- read_html(paste("https://legacy.enviroweather.msu.edu/run.php?stn=alt&mod=w_sum&da1=10&mo1=5&da2=", (as.numeric(substr(Date, 9, 10))-1), "&mo2=", substr(Date, 6, 7), "&yr=2021&mc=604&ds=cd", sep="")) %>% 
+  html_elements("td") %>%
+  html_text2()
+
+matrix <- t(replace(matrix(NA, 17, ceiling(length(data) / 17)), seq_along(data), data))
+data <- as.data.frame(matrix)
+
+write.table(data, "Arlington.csv", sep=",", col.names=FALSE, row.names=FALSE)
+
+```
+
+## Updating the sheets
+
+If the authentication doesn't work, usually, `gs4_auth()` needs to be run.
+
+### The GDD Equation
+
+```{r}
+calc.daily.GDD <- function (max, min) {
+  min <- ifelse(min < 50, 50, min)
+  max <- ifelse(max > 86, 86, max)
+  mean <- (min + max) / 2
+  ifelse(mean < 50, 0, mean - 50)
+}
+```
+
+
+### WMARS
+
+```{r}
+library(lubridate)
+library(googlesheets4)
+'%!in%' <- function(x,y)!('%in%'(x,y))
+
+# Initialize the spreadsheet for the season manually if it hasn't been already
+
+if (!file.exists("WMARS_existing.csv")) {
+  WMARS_existing <- read_csv(file = "Date, MaxTemp, MinTemp, GDDDaily
+                             05/9/2022, 83.3, 54.68, NA")
+  write.csv(WMARS_existing, "WMARS_existing.csv")
+}
+
+Existing <- read.csv("WMARS_existing.csv") %>%
+  mutate(JulianDay = yday(as.Date(Date, "%m/%d/%y")))
+
+New <- read.csv("WMARS.csv") %>%
+  mutate(JulianDay = yday(as.Date(Date, "%m/%d/%y"))) %>%
+  filter(JulianDay %!in% Existing$JulianDay)
+
+New <- merge(Existing, New, sort=FALSE, all=TRUE) %>%
+  mutate(GDDDaily = calc.daily.GDD(max = MaxTemp, min = MinTemp)) %>%
+  filter(JulianDay > 129) %>%
+  filter(JulianDay <= yday(Sys.Date())) %>% #This isn't quite right
+  arrange(JulianDay) %>%
+  select(Date, MaxTemp, MinTemp, GDDDaily)
+
+for (row in 1:nrow(New)) {
+  if (row == 1) {
+    New[row, "M800"] <- New[1, "GDDDaily"]
+  }
+  else {
+    New[row, "M800"] <- New[(row-1), "M800"] + New[row, "GDDDaily"]
+  }
+}
+
+for (row in 1:nrow(New)) {
+  if (row == 1) {
+    New[row, "M901"] <- New[1, "GDDDaily"]
+  }
+  else {
+    New[row, "M901"] <- New[(row-1), "M901"] + New[row, "GDDDaily"]
+  }
+}
+
+for (row in 2:nrow(New)) {
+  if (row == 2) {
+    New[row, "M1300"] <- New[2, "GDDDaily"]
+  }
+  else {
+    New[row, "M1300"] <- New[(row-1), "M1300"] + New[row, "GDDDaily"]
+  }
+}
+
+for (row in 2:nrow(New)) {
+  if (row == 2) {
+    New[row, "M1500"] <- New[2, "GDDDaily"]
+  }
+  else {
+    New[row, "M1500"] <- New[(row-1), "M1500"] + New[row, "GDDDaily"]
+  }
+}
+
+sheet_write(New, "16NFTFuyLMa86Y6DH_e18dhfqQzNx5fvs3B2ofny8HCs", "WM_automatic")
+
+write.csv(New, "WMARS_existing.csv")
+```
+
+## Plots
+
+### Grain Trials
+
+```{r}
+WMARSExisting <- read.csv("WMARS_existing.csv") %>%
+  select(Date, M800) %>%
+  mutate(Date = as.Date(Date, "%m/%d/%y"))
+
+Merged <- WMARSExisting %>%
+  gather(M800, key = "Field", value = "GDDs") %>%
+  mutate(Field = case_when(
+    Field == "M800" ~ "West Madison (M800)",
+  ))
+
+Merged$Field <- factor(Merged$Field, levels = c("West Madison (M800)"))
+
+ggplot(Merged, aes(Date, GDDs, group=Field, color=Field)) +
+  geom_line() +
+  theme_classic() +
+  ylab("Cumulative GDDs (ºF)") +
+  ggtitle("Grain Trials") +
+  geom_hline(yintercept = 1200, linetype = 'dotted', col = 'blue') +
+  annotate("text", x = as.Date("05/15/2021", "%m/%d/%y"), y = 1250, label = "Approximate start of flowering") +
+  geom_hline(yintercept = 120, linetype = 'dotted', col = 'blue') +
+  annotate("text", x = as.Date("05/15/2021", "%m/%d/%y"), y = 170, label = "Approximate time of emergence") +
+  scale_color_manual(values = c("#F8766D", "#00BA38", "#619CFF", "black")) +
+  scale_x_date(limits = c(as.Date("05/9/2021", "%m/%d/%y"), as.Date("05/25/2021", "%m/%d/%y")))
+
+ggsave("TrialGDDs.png", dpi=200, width = 6, height = 4, units = "in")
+```
+
+### Silage
+
+```{r}
+
+WMARSExisting <- read.csv("WMARS_existing.csv") %>%
+  select(Date, M901) %>%
+  mutate(Date = as.Date(Date, "%m/%d/%y"))
+
+Merged <- WMARSExisting %>%
+  gather(M901, key = "Field", value = "GDDs") %>%
+  mutate(Field = case_when(
+    Field == "M901" ~ "West Madison (M901)"
+  ))
+
+Merged$Field <- factor(Merged$Field, levels = c("West Madison (M901)"))
+
+ggplot(Merged, aes(Date, GDDs, group=Field, color=Field)) +
+  geom_line() +
+  theme_classic() +
+  ylab("Cumulative GDDs (ºF)") +
+  ggtitle("Silage Trials") +
+  geom_hline(yintercept = 2195, linetype = 'dotted', col = 'blue') +
+  annotate("text", x = as.Date("05/15/2021", "%m/%d/%y"), y = 2050, label = "~ 35% dry matter silage") +
+  scale_color_manual(values = c("#00BA38", "#619CFF", "black")) +
+  scale_x_date(limits = c(as.Date("05/9/2021", "%m/%d/%y"), as.Date("05/25/2021", "%m/%d/%y")))
+
+
+
+ggsave("Silage.png", dpi=200, width = 6, height = 4, units = "in")
+
+```
+
+Here's the code to run this from the command line
+```
+Rscript -e "rmarkdown::render('GDD-Plots-2022.Rmd')"
+```

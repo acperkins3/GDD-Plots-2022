@@ -1,9 +1,7 @@
 # GDD-Plots-2022
-GDD tracking for our 2022 fields
+GDD tracking for our 2022 fields by AP and DCL
 
-By AP and DCL
-
-This (very clunky) code webscrapes weather data for our GDD tracking. The output is intended to be viewed in the GoogleSheet, which is in a format that we inherited from past lab members.
+This (very clunky) code webscrapes weather data for our GDD tracking. The output is intended to be viewed in the GoogleSheet, which is in the same format that was used by past lab members.
 
 GDDs are calculated using the equation
 
@@ -16,8 +14,12 @@ calc.daily.GDD <- function (max, min) {
 }
 ```
 
-with all temperatures being in ºF
+with all temperatures being in ºF.
 
-Essentially, new weather observations are webscraped from the Middleton Airport (WMARS) or Michigan State (ARL and HAN), summarized, and saved. Then, they are merged with existing observations and saved to the GoogleSheet. Finally, the plots are upadated.
+In brief, new weather observations are webscraped from the Middleton Airport (WMARS) or Michigan State (ARL and HAN), summarized, and saved. Then, they are merged with existing observations and saved to the GoogleSheet. Finally, the plots are upadated.
 
 Please let us know if you have any questions or concerns!
+
+<p align="center"><img src="https://raw.githubusercontent.com/acperkins3/GDD-Plots-2022/main/TrialGDDs.png" /></p>
+
+<p align="center"><img src="https://raw.githubusercontent.com/acperkins3/GDD-Plots-2022/main/Silage.png" /></p>
