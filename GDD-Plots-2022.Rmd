@@ -171,6 +171,15 @@ for (row in 2:nrow(New)) {
   }
 }
 
+for (row in 3:nrow(New)) {
+  if (row == 3) {
+    New[row, "M1500"] <- New[3, "GDDDaily"]
+  }
+  else {
+    New[row, "M1500"] <- New[(row-1), "M1500"] + New[row, "GDDDaily"]
+  }
+}
+
 sheet_write(New, "16NFTFuyLMa86Y6DH_e18dhfqQzNx5fvs3B2ofny8HCs", "WM_automatic")
 
 write.csv(New, "WMARS_existing.csv")
