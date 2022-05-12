@@ -173,10 +173,10 @@ for (row in 2:nrow(New)) {
 
 for (row in 3:nrow(New)) {
   if (row == 3) {
-    New[row, "M1500"] <- New[3, "GDDDaily"]
+    New[row, "H200"] <- New[3, "GDDDaily"]
   }
   else {
-    New[row, "M1500"] <- New[(row-1), "M1500"] + New[row, "GDDDaily"]
+    New[row, "H200"] <- New[(row-1), "H200"] + New[row, "GDDDaily"]
   }
 }
 

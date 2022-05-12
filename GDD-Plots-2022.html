@@ -527,10 +527,10 @@ for (row in 2:nrow(New)) {
 
 for (row in 3:nrow(New)) {
   if (row == 3) {
-    New[row, &quot;M1500&quot;] &lt;- New[3, &quot;GDDDaily&quot;]
+    New[row, &quot;H200&quot;] &lt;- New[3, &quot;GDDDaily&quot;]
   }
   else {
-    New[row, &quot;M1500&quot;] &lt;- New[(row-1), &quot;M1500&quot;] + New[row, &quot;GDDDaily&quot;]
+    New[row, &quot;H200&quot;] &lt;- New[(row-1), &quot;H200&quot;] + New[row, &quot;GDDDaily&quot;]
   }
 }
 
@@ -541,7 +541,6 @@ sheet_write(New, &quot;16NFTFuyLMa86Y6DH_e18dhfqQzNx5fvs3B2ofny8HCs&quot;, &quot
 <pre><code>##   See gargle&#39;s &quot;Non-interactive auth&quot; vignette for more details:</code></pre>
 <pre><code>##   &lt;https://gargle.r-lib.org/articles/non-interactive-auth.html&gt;</code></pre>
 <pre><code>## → The googlesheets4 package is using a cached token for &#39;acperkins3@wisc.edu&#39;</code></pre>
-<pre><code>## Auto-refreshing stale OAuth token.</code></pre>
 <pre><code>## Writing to &quot;2022 GDD All Fields&quot;</code></pre>
 <pre><code>## Writing to sheet &quot;WM_automatic&quot;</code></pre>
 <pre class="r"><code>write.csv(New, &quot;WMARS_existing.csv&quot;)</code></pre>
