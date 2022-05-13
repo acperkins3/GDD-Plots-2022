@@ -56,12 +56,14 @@ write.csv(times, "WMARS.csv")
 
 Michigan has changed its website since last year, so I've added `legacy` to the beginnings of the URLs
 
+Year is hard coded in here!
+
 ```{r}
 library(rvest)
 
 Date <- Sys.Date()
 
-data <- read_html(paste("https://legacy.enviroweather.msu.edu/run.php?stn=hck&mod=w_sum&da1=28&mo1=4&da2=", (as.numeric(substr(Date, 9, 10))-1), "&mo2=", substr(Date, 6, 7), "&yr=2021&mc=604&ds=cd", sep="")) %>% 
+data <- read_html(paste("https://legacy.enviroweather.msu.edu/run.php?stn=hck&mod=w_sum&da1=28&mo1=4&da2=", (as.numeric(substr(Date, 9, 10))-1), "&mo2=", substr(Date, 6, 7), "&yr=2022&mc=604&ds=cd", sep="")) %>% 
   html_elements("td") %>%
   html_text2()
 
@@ -79,7 +81,7 @@ library(rvest)
 
 Date <- Sys.Date()
 
-data <- read_html(paste("https://legacy.enviroweather.msu.edu/run.php?stn=alt&mod=w_sum&da1=10&mo1=5&da2=", (as.numeric(substr(Date, 9, 10))-1), "&mo2=", substr(Date, 6, 7), "&yr=2021&mc=604&ds=cd", sep="")) %>% 
+data <- read_html(paste("https://legacy.enviroweather.msu.edu/run.php?stn=alt&mod=w_sum&da1=10&mo1=5&da2=", (as.numeric(substr(Date, 9, 10))-1), "&mo2=", substr(Date, 6, 7), "&yr=2022&mc=604&ds=cd", sep="")) %>% 
   html_elements("td") %>%
   html_text2()
 
@@ -180,6 +182,15 @@ for (row in 3:nrow(New)) {
   }
 }
 
+for (row in 4:nrow(New)) {
+  if (row == 4) {
+    New[row, "B504"] <- New[4, "GDDDaily"]
+  }
+  else {
+    New[row, "B504"] <- New[(row-1), "B504"] + New[row, "GDDDaily"]
+  }
+}
+
 sheet_write(New, "16NFTFuyLMa86Y6DH_e18dhfqQzNx5fvs3B2ofny8HCs", "WM_automatic")
 
 write.csv(New, "WMARS_existing.csv")
@@ -247,6 +258,26 @@ ggplot(Merged, aes(Date, GDDs, group=Field, color=Field)) +
 
 ggsave("Silage.png", dpi=200, width = 6, height = 4, units = "in")
 
+```
+
+### Nursery
+
+```{r}
+WMARSExisting <- read.csv("WMARS_existing.csv") %>%
+  select(Date, H200, B504) %>%
+  mutate(Date = as.Date(Date, "%m/%d/%y")) %>%
+  gather(H200, B504, key = "Field", value = "GDDs")
+
+ggplot(WMARSExisting, aes(Date, GDDs, group=Field, color=Field)) +
+  geom_line() + 
+  theme_classic() +
+  ylab("Cumulative GDDs (ºF)") +
+  ggtitle("Nurseries and Observation") +
+  geom_hline(yintercept = 1200, linetype = 'dotted', col = 'blue') +
+  annotate("text", x = as.Date("05/15/2021", "%m/%d/%y"), y = 1150, label = "Approximate start of flowering") +
+  scale_x_date(limits = c(as.Date("05/9/2021", "%m/%d/%y"), as.Date("05/25/2021", "%m/%d/%y")))
+
+ggsave("NurseriesGDDs.png", dpi=500, width = 6, height = 4, units = "in")
 ```
 
 Here's the code to run this from the command line
