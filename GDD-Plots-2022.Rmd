@@ -175,10 +175,10 @@ for (row in 2:nrow(New)) {
 
 for (row in 3:nrow(New)) {
   if (row == 3) {
-    New[row, "H200"] <- New[3, "GDDDaily"]
+    New[row, "H102"] <- New[3, "GDDDaily"]
   }
   else {
-    New[row, "H200"] <- New[(row-1), "H200"] + New[row, "GDDDaily"]
+    New[row, "H102"] <- New[(row-1), "H102"] + New[row, "GDDDaily"]
   }
 }
 
@@ -264,9 +264,9 @@ ggsave("Silage.png", dpi=200, width = 6, height = 4, units = "in")
 
 ```{r}
 WMARSExisting <- read.csv("WMARS_existing.csv") %>%
-  select(Date, H200, B504) %>%
+  select(Date, H102, B504) %>%
   mutate(Date = as.Date(Date, "%m/%d/%y")) %>%
-  gather(H200, B504, key = "Field", value = "GDDs")
+  gather(H102, B504, key = "Field", value = "GDDs")
 
 ggplot(WMARSExisting, aes(Date, GDDs, group=Field, color=Field)) +
   geom_line() + 
