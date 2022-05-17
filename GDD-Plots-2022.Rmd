@@ -254,7 +254,7 @@ WMARSExisting <- read.csv("WMARS_existing.csv") %>%
   select(Date, M800) %>%
   mutate(Date = as.Date(Date, "%m/%d/%y"))
 
-HANExisting <- read.csv("Hancock_existing.csv") %>%
+HANExisting <- read.csv("Hancock_existing.csv", check.names = FALSE) %>%
   select(Date, `K25-K32`) %>%
   mutate(Date = as.Date(Date, "%m/%d/%y"))
 
