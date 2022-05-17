@@ -196,6 +196,55 @@ sheet_write(New, "16NFTFuyLMa86Y6DH_e18dhfqQzNx5fvs3B2ofny8HCs", "WM_automatic")
 write.csv(New, "WMARS_existing.csv")
 ```
 
+### Hancock
+
+```{r}
+library(lubridate)
+library(googlesheets4)
+'%!in%' <- function(x,y)!('%in%'(x,y))
+
+# Initialize the spreadsheet for the season manually if it hasn't been already
+
+if (!file.exists("Hancock_existing.csv")) {
+  WMARS_existing <- read_csv(file = "Date, MaxTemp, MinTemp, GDDDaily
+                             05/16/2022, 72.1, 48.9, NA")
+  write.csv(WMARS_existing, "Hancock_existing.csv")
+}
+
+Existing <- read.csv("Hancock_existing.csv") %>%
+  mutate(JulianDay = yday(as.Date(Date, "%m/%d/%y")))
+
+New <- read.csv("Hancock.csv") %>%
+  mutate(Date = paste(Date, "/2021", sep="")) %>%
+  mutate(JulianDay = yday(as.Date(Date, "%m/%d/%y"))) %>%
+  filter(JulianDay %!in% Existing$JulianDay) %>%
+  filter(JulianDay >= 135)
+
+New <- merge(Existing, New, sort=FALSE, all=TRUE) %>%
+  mutate(GDDDaily = calc.daily.GDD(max = Max, min = Min)) %>%
+  filter(JulianDay >= 135) %>%
+#  filter(JulianDay < yday(Sys.Date())) %>%
+  arrange(JulianDay) %>%
+  select(Date, Max, Min, GDDDaily)
+
+for (row in 1:nrow(New)) {
+  if (row == 1) {
+    New[row, "K25-K32"] <- New[1, "GDDDaily"]
+  }
+  else {
+    New[row, "K25-K32"] <- New[(row-1), "K25-K32"] + New[row, "GDDDaily"]
+  }
+}
+
+
+
+
+sheet_write(New, "16NFTFuyLMa86Y6DH_e18dhfqQzNx5fvs3B2ofny8HCs", "HAN_automatic")
+
+write.csv(New, "Hancock_existing.csv")
+
+```
+
 ## Plots
 
 ### Grain Trials
@@ -205,13 +254,18 @@ WMARSExisting <- read.csv("WMARS_existing.csv") %>%
   select(Date, M800) %>%
   mutate(Date = as.Date(Date, "%m/%d/%y"))
 
-Merged <- WMARSExisting %>%
-  gather(M800, key = "Field", value = "GDDs") %>%
+HANExisting <- read.csv("Hancock_existing.csv") %>%
+  select(Date, `K25-K32`) %>%
+  mutate(Date = as.Date(Date, "%m/%d/%y"))
+
+Merged <- merge(WMARSExisting, HANExisting, by = "Date", all=TRUE) %>%
+  gather(M800, `K25-K32`, key = "Field", value = "GDDs") %>%
   mutate(Field = case_when(
     Field == "M800" ~ "West Madison (M800)",
+    Field == "K25-K32" ~ "Hancock (K25 - K32)"
   ))
 
-Merged$Field <- factor(Merged$Field, levels = c("West Madison (M800)"))
+Merged$Field <- factor(Merged$Field, levels = c("West Madison (M800)", "Hancock (K25 - K32)"))
 
 ggplot(Merged, aes(Date, GDDs, group=Field, color=Field)) +
   geom_line() +
