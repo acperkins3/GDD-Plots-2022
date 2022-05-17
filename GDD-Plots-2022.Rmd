@@ -206,7 +206,7 @@ library(googlesheets4)
 # Initialize the spreadsheet for the season manually if it hasn't been already
 
 if (!file.exists("Hancock_existing.csv")) {
-  WMARS_existing <- read_csv(file = "Date, MaxTemp, MinTemp, GDDDaily
+  WMARS_existing <- read_csv(file = "Date, Max, Min, GDDDaily
                              05/16/2022, 72.1, 48.9, NA")
   write.csv(WMARS_existing, "Hancock_existing.csv")
 }
@@ -218,11 +218,11 @@ New <- read.csv("Hancock.csv") %>%
   mutate(Date = paste(Date, "/2021", sep="")) %>%
   mutate(JulianDay = yday(as.Date(Date, "%m/%d/%y"))) %>%
   filter(JulianDay %!in% Existing$JulianDay) %>%
-  filter(JulianDay >= 135)
+  filter(JulianDay >= 137)
 
 New <- merge(Existing, New, sort=FALSE, all=TRUE) %>%
   mutate(GDDDaily = calc.daily.GDD(max = Max, min = Min)) %>%
-  filter(JulianDay >= 135) %>%
+  filter(JulianDay >= 137) %>%
 #  filter(JulianDay < yday(Sys.Date())) %>%
   arrange(JulianDay) %>%
   select(Date, Max, Min, GDDDaily)
