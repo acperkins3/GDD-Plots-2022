@@ -229,10 +229,28 @@ New <- merge(Existing, New, sort=FALSE, all=TRUE) %>%
 
 for (row in 1:nrow(New)) {
   if (row == 1) {
-    New[row, "K25-K32"] <- New[1, "GDDDaily"]
+    New[row, "K25-K28"] <- New[1, "GDDDaily"]
   }
   else {
-    New[row, "K25-K32"] <- New[(row-1), "K25-K32"] + New[row, "GDDDaily"]
+    New[row, "K25-K28"] <- New[(row-1), "K25-K28"] + New[row, "GDDDaily"]
+  }
+}
+
+for (row in 2:nrow(New)) {
+  if (row == 2) {
+    New[row, "K29-K32"] <- New[2, "GDDDaily"]
+  }
+  else {
+    New[row, "K29-K32"] <- New[(row-1), "K29-K32"] + New[row, "GDDDaily"]
+  }
+}
+
+for (row in 3:nrow(New)) {
+  if (row == 3) {
+    New[row, "S12-S16"] <- New[3, "GDDDaily"]
+  }
+  else {
+    New[row, "S12-S16"] <- New[(row-1), "S12-S16"] + New[row, "GDDDaily"]
   }
 }
 
@@ -255,14 +273,14 @@ WMARSExisting <- read.csv("WMARS_existing.csv") %>%
   mutate(Date = as.Date(Date, "%m/%d/%y"))
 
 HANExisting <- read.csv("Hancock_existing.csv", check.names = FALSE) %>%
-  select(Date, `K25-K32`) %>%
+  select(Date, `K25-K28`) %>%
   mutate(Date = as.Date(Date, "%m/%d/%y"))
 
 Merged <- merge(WMARSExisting, HANExisting, by = "Date", all=TRUE) %>%
-  gather(M800, `K25-K32`, key = "Field", value = "GDDs") %>%
+  gather(M800, `K25-K28`, key = "Field", value = "GDDs") %>%
   mutate(Field = case_when(
     Field == "M800" ~ "West Madison (M800)",
-    Field == "K25-K32" ~ "Hancock (K25 - K32)"
+    Field == "K25-K28" ~ "Hancock (K25 - K28)"
   ))
 
 Merged$Field <- factor(Merged$Field, levels = c("West Madison (M800)", "Hancock (K25 - K32)"))
