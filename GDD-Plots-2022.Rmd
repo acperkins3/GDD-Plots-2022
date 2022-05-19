@@ -283,7 +283,7 @@ Merged <- merge(WMARSExisting, HANExisting, by = "Date", all=TRUE) %>%
     Field == "K25-K28" ~ "Hancock (K25 - K28)"
   ))
 
-Merged$Field <- factor(Merged$Field, levels = c("West Madison (M800)", "Hancock (K25 - K32)"))
+Merged$Field <- factor(Merged$Field, levels = c("West Madison (M800)", "Hancock (K25 - K28)"))
 
 ggplot(Merged, aes(Date, GDDs, group=Field, color=Field)) +
   geom_line() +
