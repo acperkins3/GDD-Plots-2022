@@ -191,6 +191,15 @@ for (row in 4:nrow(New)) {
   }
 }
 
+for (row in 4:nrow(New)) {
+  if (row == 12) {
+    New[row, "B505"] <- New[12, "GDDDaily"]
+  }
+  else {
+    New[row, "B505"] <- New[(row-1), "B505"] + New[row, "GDDDaily"]
+  }
+}
+
 sheet_write(New, "16NFTFuyLMa86Y6DH_e18dhfqQzNx5fvs3B2ofny8HCs", "WM_automatic")
 
 write.csv(New, "WMARS_existing.csv")
@@ -336,9 +345,11 @@ ggsave("Silage.png", dpi=200, width = 6, height = 4, units = "in")
 
 ```{r}
 WMARSExisting <- read.csv("WMARS_existing.csv") %>%
-  select(Date, H102, B504) %>%
+  select(Date, H102, B504, B505) %>%
   mutate(Date = as.Date(Date, "%m/%d/%y")) %>%
-  gather(H102, B504, key = "Field", value = "GDDs")
+  gather(H102, B504, B505, key = "Field", value = "GDDs")
+
+WMARSExisting$Field <- factor(WMARSExisting$Field, levels = c("H102", "B504", "B505"))
 
 ggplot(WMARSExisting, aes(Date, GDDs, group=Field, color=Field)) +
   geom_line() + 
