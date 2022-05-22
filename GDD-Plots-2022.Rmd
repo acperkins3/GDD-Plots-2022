@@ -191,7 +191,7 @@ for (row in 4:nrow(New)) {
   }
 }
 
-for (row in 4:nrow(New)) {
+for (row in 12:nrow(New)) {
   if (row == 12) {
     New[row, "B505"] <- New[12, "GDDDaily"]
   }
