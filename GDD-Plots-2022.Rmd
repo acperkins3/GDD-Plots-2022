@@ -272,6 +272,60 @@ write.csv(New, "Hancock_existing.csv")
 
 ```
 
+### ARL
+
+```
+library(lubridate)
+library(googlesheets4)
+'%!in%' <- function(x,y)!('%in%'(x,y))
+
+if (!file.exists("Arlington_existing.csv")) {
+  WMARS_existing <- read_csv(file = "Date, Max, Min, GDDDaily
+                             05/23/2022, NA, NA, NA")
+  write.csv(WMARS_existing, "Arlington_existing.csv")
+}
+
+Existing <- read.csv("Arlington_existing.csv") %>%
+  mutate(JulianDay = yday(as.Date(Date, "%m/%d/%y")))
+
+New <- read.csv("Arlington.csv") %>%
+  mutate(Date = paste(Date, "/2021", sep="")) %>%
+  mutate(JulianDay = yday(as.Date(Date, "%m/%d/%y"))) %>%
+  filter(JulianDay %!in% Existing$JulianDay) %>%
+  filter(JulianDay >= 144)
+
+New <- merge(Existing, New, sort=FALSE, all=TRUE) %>%
+  mutate(GDDDaily = calc.daily.GDD(max = Max, min = Min)) %>%
+  filter(JulianDay >= 144) %>%
+#  filter(JulianDay < yday(Sys.Date())) %>%
+  arrange(JulianDay) %>%
+  select(Date, Max, Min, GDDDaily)
+
+for (row in 1:nrow(New)) {
+  if (row == 1) {
+    New[row, "1E"] <- New[1, "GDDDaily"]
+  }
+  else {
+    New[row, "1E"] <- New[(row-1), "1E"] + New[row, "GDDDaily"]
+  }
+}
+
+for (row in 1:nrow(New)) {
+  if (row == 1) {
+    New[row, "1W"] <- New[1, "GDDDaily"]
+  }
+  else {
+    New[row, "1W"] <- New[(row-1), "1W"] + New[row, "GDDDaily"]
+  }
+}
+
+
+sheet_write(New, "16NFTFuyLMa86Y6DH_e18dhfqQzNx5fvs3B2ofny8HCs", "ARL_automatic")
+
+write.csv(New, "Arlington_existing.csv")
+
+```
+
 ## Plots
 
 ### Grain Trials
