@@ -272,7 +272,7 @@ write.csv(New, "Hancock_existing.csv")
 
 ```
 
-### ARL
+### Arlington
 
 ```{r}
 library(lubridate)
@@ -316,6 +316,24 @@ for (row in 1:nrow(New)) {
   }
   else {
     New[row, "1W"] <- New[(row-1), "1W"] + New[row, "GDDDaily"]
+  }
+}
+
+for (row in 2:nrow(New)) {
+  if (row == 2) {
+    New[row, "28W"] <- New[2, "GDDDaily"]
+  }
+  else {
+    New[row, "28W"] <- New[(row-1), "28W"] + New[row, "GDDDaily"]
+  }
+}
+
+for (row in 2:nrow(New)) {
+  if (row == 2) {
+    New[row, "26N"] <- New[2, "GDDDaily"]
+  }
+  else {
+    New[row, "26N"] <- New[(row-1), "26N"] + New[row, "GDDDaily"]
   }
 }
 
