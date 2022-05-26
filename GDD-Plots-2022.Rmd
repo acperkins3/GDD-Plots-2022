@@ -396,13 +396,18 @@ WMARSExisting <- read.csv("WMARS_existing.csv") %>%
   select(Date, M901) %>%
   mutate(Date = as.Date(Date, "%m/%d/%y"))
 
-Merged <- WMARSExisting %>%
-  gather(M901, key = "Field", value = "GDDs") %>%
+ARLExisting <- read.csv("Arlington_existing.csv", check.names = FALSE) %>%
+  select(Date, `26N`) %>%
+  mutate(Date = as.Date(Date, "%m/%d/%y"))
+
+Merged <- merge(WMARSExisting, ARLExisting, by = "Date", all = TRUE) %>%
+  gather(M901, `26N`, key = "Field", value = "GDDs") %>%
   mutate(Field = case_when(
-    Field == "M901" ~ "West Madison (M901)"
+    Field == "M901" ~ "West Madison (M901)",
+    Field == "26N" ~ "Arlington (26N)"
   ))
 
-Merged$Field <- factor(Merged$Field, levels = c("West Madison (M901)"))
+Merged$Field <- factor(Merged$Field, levels = c("West Madison (M901)", "Arlington (26N)"))
 
 ggplot(Merged, aes(Date, GDDs, group=Field, color=Field)) +
   geom_line() +
