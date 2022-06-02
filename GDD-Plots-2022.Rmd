@@ -346,6 +346,15 @@ for (row in 9:nrow(New)) {
   }
 }
 
+for (row in 10:nrow(New)) {
+  if (row == 10) {
+    New[row, "712"] <- New[10, "GDDDaily"]
+  }
+  else {
+    New[row, "712"] <- New[(row-1), "712"] + New[row, "GDDDaily"]
+  }
+}
+
 
 sheet_write(New, "16NFTFuyLMa86Y6DH_e18dhfqQzNx5fvs3B2ofny8HCs", "ARL_automatic")
 
