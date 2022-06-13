@@ -386,19 +386,20 @@ HANExisting <- read.csv("Hancock_existing.csv", check.names = FALSE) %>%
   mutate(Date = as.Date(Date, "%m/%d/%y"))
 
 ARLExisting <- read.csv("Arlington_existing.csv", check.names = FALSE) %>%
-  select(Date, `1E`) %>%
+  select(Date, `1E`, `712`) %>%
   mutate(Date = as.Date(Date, "%m/%d/%y"))
 
 Merged <- merge(WMARSExisting, HANExisting, by = "Date", all=TRUE) %>%
   merge(ARLExisting, by = "Date", all = TRUE) %>%
-  gather(M800, `K25-K28`, `1E`, key = "Field", value = "GDDs") %>%
+  gather(M800, `K25-K28`, `1E`, `712`, key = "Field", value = "GDDs") %>%
   mutate(Field = case_when(
     Field == "M800" ~ "West Madison (M800)",
     Field == "K25-K28" ~ "Hancock (K25 - K28)",
-    Field == "1E" ~ "Arlington (1E)"
+    Field == "1E" ~ "Arlington (1E)",
+    Field == "712" ~ "Arlington (712)"
   ))
 
-Merged$Field <- factor(Merged$Field, levels = c("West Madison (M800)", "Hancock (K25 - K28)", "Arlington (1E)"))
+Merged$Field <- factor(Merged$Field, levels = c("West Madison (M800)", "Hancock (K25 - K28)", "Arlington (1E)", "Arlington (712)"))
 
 ggplot(Merged, aes(Date, GDDs, group=Field, color=Field)) +
   geom_line() +
