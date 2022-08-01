@@ -496,7 +496,31 @@ for (row in 1:nrow(M800Flowering)) {
 
 }
 
-ggplot(M800Flowering, aes(GDDs, ProportionFlowered, color = Field)) +
+PHP02 <- read.csv("~/gem-fact-field/Data2022/GEMS FACT DH X PHP02 2022 ARL Phenotypes.csv")
+
+MBS5411 <- read.csv("~/gem-fact-field/Data2022/GEMS FACT DH X MBS5411 2022 ARL Phenotypes.csv")
+
+LH244 <- read.csv("~/gem-fact-field/Data2022/GEMN FACT DH X LH244 2022 ARL Phenotypes.csv")
+
+ARL712 <- rbind(PHP02, MBS5411, LH244)
+
+ARL712Flowering <- data.frame(GDDs = unique(ARL712$AnthesisGDD),
+                            ProportionFlowered = NA,
+                            Field = "712") %>%
+  filter(!is.na(GDDs))
+
+for (row in 1:nrow(ARL712Flowering)) {
+  ThisValue <- ARL712Flowering[row, "GDDs"]
+  tempdf <- ARL712 %>%
+    filter(!is.na(AnthesisGDD)) %>%
+    filter(AnthesisGDD <= ThisValue)
+  ARL712Flowering[row, "ProportionFlowered"] <- nrow(tempdf) / nrow(ARL712)
+
+}
+
+MergedFlowering <- rbind(M800Flowering, ARL712Flowering)
+
+ggplot(MergedFlowering, aes(GDDs, ProportionFlowered, color = Field)) +
   geom_line() +
   xlab("Cumulative GDDs (ºF)") +
   ylab("Proportion of plots at anthesis") +
