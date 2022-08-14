@@ -407,11 +407,11 @@ ggplot(Merged, aes(Date, GDDs, group=Field, color=Field)) +
   ylab("Cumulative GDDs (ºF)") +
   ggtitle("Grain Trials") +
   geom_hline(yintercept = 1200, linetype = 'dotted', col = 'blue') +
-  annotate("text", x = as.Date("06/10/2022", "%m/%d/%y"), y = 1350, label = "Approximate start of flowering") +
+  annotate("text", x = as.Date("06/10/2022", "%m/%d/%y"), y = 1350, label = "~ start of flowering") +
   geom_hline(yintercept = 120, linetype = 'dotted', col = 'blue') +
   scale_color_manual(values = c("#F8766D", "#00BA38", "#619CFF", "black")) + 
   geom_hline(yintercept = 2700, linetype = 'dotted', col = 'black') +
-  annotate("text", x = as.Date("06/10/2022", "%m/%d/%y"), y = 2550, label = "~Black layer / physiological maturity")
+  annotate("text", x = as.Date("06/10/2022", "%m/%d/%y"), y = 2550, label = "~ physiological maturity")
 
 ggsave("TrialGDDs.png", dpi=200, width = 6, height = 4, units = "in")
 ```
@@ -444,7 +444,7 @@ ggplot(Merged, aes(Date, GDDs, group=Field, color=Field)) +
   ylab("Cumulative GDDs (ºF)") +
   ggtitle("Silage Trials") +
   geom_hline(yintercept = 2195, linetype = 'dotted', col = 'blue') +
-  annotate("text", x = as.Date("06/02/2021", "%m/%d/%y"), y = 2050, label = "~ 35% dry matter silage") +
+  annotate("text", x = as.Date("06/15/2022", "%m/%d/%y"), y = 2050, label = "~ 35% dry matter silage") +
   scale_color_manual(values = c("#00BA38", "#619CFF", "black")) #+
   #scale_x_date(limits = c(as.Date("05/9/2022", "%m/%d/%y"), as.Date("05/25/2021", "%m/%d/%y")))
 
@@ -470,17 +470,17 @@ ggplot(WMARSExisting, aes(Date, GDDs, group=Field, color=Field)) +
   ylab("Cumulative GDDs (ºF)") +
   ggtitle("Nurseries and Observations") +
   geom_hline(yintercept = 1200, linetype = 'dotted', col = 'blue') +
-  annotate("text", x = as.Date("06/10/2022", "%m/%d/%y"), y = 1100, label = "Approximate start of flowering") +
+  annotate("text", x = as.Date("06/10/2022", "%m/%d/%y"), y = 1100, label = "~ start of flowering") +
   geom_hline(yintercept = 120, linetype = 'dotted', col = 'blue') +
   geom_hline(yintercept = 2700, linetype = 'dotted', col = 'black') +
-  annotate("text", x = as.Date("06/10/2022", "%m/%d/%y"), y = 2550, label = "~Black layer / physiological maturity")
+  annotate("text", x = as.Date("06/10/2022", "%m/%d/%y"), y = 2550, label = "~ physiological maturity")
 
 ggsave("NurseriesGDDs.png", dpi=500, width = 6, height = 4, units = "in")
 ```
 
 ### Flowering Progress
 
-```{r}
+```
 M800 <- read.csv("~/gem-fact-field/Data2022/GEMN FACT DH X LH244 2022 WM Phenotypes.csv")
 
 M800Flowering <- data.frame(GDDs = unique(M800$AnthesisGDD),
