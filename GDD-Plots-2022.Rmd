@@ -411,7 +411,9 @@ ggplot(Merged, aes(Date, GDDs, group=Field, color=Field)) +
   geom_hline(yintercept = 120, linetype = 'dotted', col = 'blue') +
   scale_color_manual(values = c("#F8766D", "#00BA38", "#619CFF", "black")) + 
   geom_hline(yintercept = 2700, linetype = 'dotted', col = 'black') +
-  annotate("text", x = as.Date("06/10/2022", "%m/%d/%y"), y = 2550, label = "~ physiological maturity")
+  annotate("text", x = as.Date("06/10/2022", "%m/%d/%y"), y = 2550, label = "~ physiological maturity") + 
+  geom_hline(yintercept = 2145, linetype = 'dotted', col = 'black') +
+  annotate("text", x = as.Date("06/10/2022", "%m/%d/%y"), y = 1990, label = "~ GEMN drooping ears")
 
 ggsave("TrialGDDs.png", dpi=200, width = 6, height = 4, units = "in")
 ```
