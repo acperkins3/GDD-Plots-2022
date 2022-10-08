@@ -209,6 +209,15 @@ for (row in 26:nrow(New)) {
   }
 }
 
+for (row in 149:nrow(New)) {
+  if (row == 149) {
+    New[row, "CERCA"] <- New[149, "GDDDaily"]
+  }
+  else {
+    New[row, "CERCA"] <- New[(row-1), "CERCA"] + New[row, "GDDDaily"]
+  }
+}
+
 
 sheet_write(New, "16NFTFuyLMa86Y6DH_e18dhfqQzNx5fvs3B2ofny8HCs", "WM_automatic")
 

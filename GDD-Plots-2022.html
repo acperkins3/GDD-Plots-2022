@@ -562,6 +562,15 @@ for (row in 26:nrow(New)) {
   }
 }
 
+for (row in 149:nrow(New)) {
+  if (row == 149) {
+    New[row, &quot;CERCA&quot;] &lt;- New[149, &quot;GDDDaily&quot;]
+  }
+  else {
+    New[row, &quot;CERCA&quot;] &lt;- New[(row-1), &quot;CERCA&quot;] + New[row, &quot;GDDDaily&quot;]
+  }
+}
+
 
 sheet_write(New, &quot;16NFTFuyLMa86Y6DH_e18dhfqQzNx5fvs3B2ofny8HCs&quot;, &quot;WM_automatic&quot;)</code></pre>
 <pre><code>## → Using an auto-discovered, cached token</code></pre>
